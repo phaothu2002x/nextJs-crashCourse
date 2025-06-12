@@ -11,3 +11,9 @@ export const STARTUP_QUERY_BY_ID =
     {
   _id, _createdAt, author->{_id, name,username,image,bio}, description, category, image, title, views, slug, pitch
     }`);
+
+export const STARTUP_VIEWS_QUERY =
+    defineQuery(`*[_type =='startup' && _id==$id][0]
+    {
+  _id, views 
+    }`);
