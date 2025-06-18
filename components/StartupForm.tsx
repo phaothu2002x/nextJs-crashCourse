@@ -67,7 +67,7 @@ const StartupForm = () => {
         };
     };
 
-    const [state, formAction, isPending] = useActionState(handleFormSubmit, {
+    const [state, formAction, isPending] = useFormState(handleFormSubmit, {
         error: '',
         status: 'INITIAL',
     });
