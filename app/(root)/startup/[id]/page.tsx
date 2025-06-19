@@ -1,6 +1,9 @@
 import { formateDate } from '@/lib/utils';
 import { client } from '@/sanity/lib/client';
-import { STARTUP_QUERY_BY_ID } from '@/sanity/lib/queries';
+import {
+    PLAYLIST_BY_SLUG_QUERY,
+    STARTUP_QUERY_BY_ID,
+} from '@/sanity/lib/queries';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -9,14 +12,30 @@ import React, { Suspense } from 'react';
 import markdownit from 'markdown-it';
 import { Skeleton } from '@/components/ui/skeleton';
 import View from '@/components/View';
+import StartupCard, { StartupCardType } from '@/components/StartupCard';
 
 const md = markdownit();
-// export const experimental_ppr = true;
+export const experimental_ppr = true;
 
 const page = async ({ params }: { params: Promise<{ id: string }> }) => {
     const id = (await params).id;
-    const post = await client.fetch(STARTUP_QUERY_BY_ID, { id });
+
+    // parallel fetching
+    const [post, { select: editorPosts }] = await Promise.all([
+        client.fetch(STARTUP_QUERY_BY_ID, { id }), // Fetching startup by ID
+        client.fetch(PLAYLIST_BY_SLUG_QUERY, {
+            slug: 'ediors-pick',
+        }),
+    ]);
+
+    // If you want to fetch the post individually(in Sequence), you can uncomment the following lines
+    // const post = await client.fetch(STARTUP_QUERY_BY_ID, { id });
+    // const { select: editorPosts } = await client.fetch(PLAYLIST_BY_SLUG_QUERY, {
+    //     slug: 'ediors-pick',
+    // });
+
     if (!post) return notFound();
+
     const parsedContent = md.render(post?.pitch || '');
 
     return (
@@ -77,6 +96,18 @@ const page = async ({ params }: { params: Promise<{ id: string }> }) => {
                 </div>
                 <div className="divider"></div>
                 {/* editor selected startups */}
+                {editorPosts && editorPosts.length > 0 && (
+                    <div className="mx-auto max-w-4xl">
+                        <p className="text-30-sm">Editors Pick</p>
+                        <ul className="mt-7 card_grid-sm ">
+                            {editorPosts.map(
+                                (post: StartupCardType, index: number) => (
+                                    <StartupCard key={index} post={post} />
+                                )
+                            )}
+                        </ul>
+                    </div>
+                )}
 
                 <Suspense fallback={<Skeleton className="view_skeleton" />}>
                     <View id={id} />
