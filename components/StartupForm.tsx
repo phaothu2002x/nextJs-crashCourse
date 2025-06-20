@@ -6,12 +6,12 @@ import { Textarea } from './ui/textarea';
 import MDEditor from '@uiw/react-md-editor';
 import { Button } from './ui/button';
 import { Send } from 'lucide-react';
-import { useFormState } from 'react-dom';
 import { formSchema } from '@/lib/validation';
 import { z } from 'zod';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { createPitch } from '@/lib/actions';
+
 const StartupForm = () => {
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [pitch, setPitch] = useState('');
@@ -29,9 +29,11 @@ const StartupForm = () => {
             };
             await formSchema.parseAsync(formValues);
 
+            // console.log('check ', formValues);
             const result = await createPitch(prevState, formData, pitch);
-            console.log(result);
+
             if (result.status == 'SUCCESS') {
+                // console.log('run ', result._id);
                 toast({
                     title: 'Success ',
                     description: 'Your startup has been created successfully',
@@ -48,12 +50,13 @@ const StartupForm = () => {
                     description: 'Please check the input values',
                     variant: 'destructive',
                 });
-            } else
+
                 return {
                     ...prevState,
                     error: 'validation failed',
                     status: 'ERROR',
                 };
+            }
         }
         toast({
             title: 'Error',
@@ -67,7 +70,7 @@ const StartupForm = () => {
         };
     };
 
-    const [state, formAction, isPending] = useFormState(handleFormSubmit, {
+    const [state, formAction, isPending] = useActionState(handleFormSubmit, {
         error: '',
         status: 'INITIAL',
     });
@@ -142,6 +145,7 @@ const StartupForm = () => {
                     id="pitch "
                     height={300}
                     value={pitch}
+                    onChange={(value) => setPitch(value as string)}
                     preview="edit"
                     style={{ borderRadius: 20, overflow: 'hidden' }}
                     textareaProps={{
@@ -149,7 +153,6 @@ const StartupForm = () => {
                             'Briefly describe your startup and what the problems it solves.',
                     }}
                     previewOptions={{ disallowedElements: ['style'] }}
-                    onChange={(value) => setPitch(value as string)}
                 />
                 {errors.pitch && (
                     <p className="startup-form_error"> {errors.pitch}</p>

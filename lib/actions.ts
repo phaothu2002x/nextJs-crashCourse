@@ -48,7 +48,7 @@ export const createPitch = async (
         return parseServerActionResponse({
             ...result,
             error: '',
-            status: 'success ',
+            status: 'SUCCESS',
         });
     } catch (error) {
         console.log(error);
